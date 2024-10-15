@@ -3,4 +3,3 @@ gin-config
 einops
 local_attention
 tensorboardX
-pytorch-fast-transformers
