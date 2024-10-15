@@ -93,10 +93,9 @@ class Audio2Mel(torch.nn.Module):
             win_length=self.win_length,
             window=self.window,
             center=False,
-            return_complex=False,
+            return_complex=True
         )
-        real_part, imag_part = fft.unbind(-1)
-        magnitude = torch.sqrt(real_part ** 2 + imag_part ** 2)
+        magnitude = torch.abs(fft)
         mel_output = torch.matmul(self.mel_basis, magnitude)
         log_mel_spec = torch.log10(torch.clamp(mel_output, min=1e-5))
 
