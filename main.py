@@ -136,7 +136,7 @@ if __name__ == '__main__':
     loss_func.to(args.device)
 
     # datas
-    loader_train, loader_valid = get_data_loaders(args, whole_audio=False)
+    loader_train, loader_valid = get_data_loaders(args, whole_audio=True)
 
     # stage
     if cmd.stage == 'training':

@@ -1,8 +1,7 @@
 import os
 import numpy as np
-import librosa as li
+import librosa
 from librosa.filters import mel as librosa_mel_fn
-import soundfile as sf
 # import crepe
 
 import torch
@@ -149,8 +148,7 @@ def process_mel(
         print(' >  path dst mel:', path_dstfile)
         
         # load
-        x, sr = sf.read(path_srcfile)
-        assert sr == sampling_rate
+        x, _ = librosa.load(path_srcfile, sr=sampling_rate)
         x_t = torch.from_numpy(x).float().to(device)
         x_t = x_t.unsqueeze(0).unsqueeze(0) # (T,) --> (1, 1, T)
 
@@ -168,7 +166,7 @@ if __name__ == '__main__':
     # ==================================================== #
     # configuration
     # ==================================================== #
-    path_rootdir = './data'
+    path_rootdir = '../vocalset_75'
     device = 'cuda'
 
     sampling_rate  = 24000
@@ -181,19 +179,18 @@ if __name__ == '__main__':
 
     # ========================== #
     # run
-    for v in ['m1', 'f1']:
-        for s in ['train-full', 'train-3min', 'val', 'test']:
-            print(f'=== {v} - {s} =============')
-            path_srcdir  = os.path.join(path_rootdir, v, s, 'audio')
-            path_dstdir  = os.path.join(path_rootdir, v, s, 'mel')
-            process_mel(
-                path_srcdir, 
-                path_dstdir, 
-                device,
-                sampling_rate,
-                hop_length,
-                win_length,
-                n_mel_channels,
-                src_ext,
-                dst_ext)
+    for s in ['train-full', 'val']:
+        print(f'=== {s} =============')
+        path_srcdir  = os.path.join(path_rootdir, s, 'audio')
+        path_dstdir  = os.path.join(path_rootdir, s, 'mel')
+        process_mel(
+            path_srcdir, 
+            path_dstdir, 
+            device,
+            sampling_rate,
+            hop_length,
+            win_length,
+            n_mel_channels,
+            src_ext,
+            dst_ext)
     

@@ -50,7 +50,7 @@ def traverse_dir(
     return file_list
 
 
-def get_data_loaders(args, whole_audio=False):
+def get_data_loaders(args, whole_audio=True):
     data_train = AudioDataset(
         args.data.train_path,
         waveform_sec=args.data.duration,
@@ -88,7 +88,7 @@ class AudioDataset(Dataset):
         waveform_sec,
         hop_size,
         sample_rate,
-        whole_audio=False,
+        whole_audio=True,
     ):
         super().__init__()
         

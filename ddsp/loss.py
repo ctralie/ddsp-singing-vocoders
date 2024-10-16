@@ -3,7 +3,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
-import torchaudio
 
 
 class HybridLoss(nn.Module):
@@ -17,7 +16,7 @@ class HybridLoss(nn.Module):
         loss_mss = self.loss_mss_func(y_pred, y_true)
         loss_f0 = self.f0_loss_func(f0_pred, f0_true)
         # loss_f0_slow = self.fo_slow_loss_func(f0_pred)
-        loss = loss_mss + loss_f0 # + loss_f0_slow
+        loss = loss_mss #+ loss_f0 # + loss_f0_slow
 
         return loss, (loss_mss, loss_f0) #, loss_f0_slow)
 
@@ -33,7 +32,6 @@ class SSSLoss(nn.Module):
         self.alpha = alpha
         self.eps = eps
         self.hop_length = int(n_fft * (1 - overlap))  # 25% of the length
-        self.spec = torchaudio.transforms.Spectrogram(n_fft=self.n_fft, hop_length=self.hop_length)
         self.name = name
     def forward(self, x_true, x_pred):
         min_len = np.min([x_true.shape[1], x_pred.shape[1]])
@@ -50,8 +48,10 @@ class SSSLoss(nn.Module):
         # print('x_true:', x_true.shape)
         # print('--------\n\n\n')
 
-        S_true = self.spec(x_true)
-        S_pred = self.spec(x_pred)
+        S_true = torch.stft(x_true, hop_length=self.hop_length, win_length=self.n_fft, n_fft=self.n_fft, return_complex=True)
+        S_true = torch.abs(S_true)
+        S_pred = torch.stft(x_pred, hop_length=self.hop_length, win_length=self.n_fft, n_fft=self.n_fft, return_complex=True)
+        S_pred = torch.abs(S_pred)
         linear_term = F.l1_loss(S_pred, S_true)
         log_term = F.l1_loss((S_true + self.eps).log2(), (S_pred + self.eps).log2())
 
@@ -109,12 +109,12 @@ class F0L1Loss(nn.Module):
         
         if torch.sum(f0_hz_true>=50) < 10:
             return torch.tensor(0.0)
-        if self.iteration > 5000:
-            f0_predict = torch.where(f0_hz_true<50, f0_predict*0.0, f0_predict)
-            loss = F.l1_loss(torch.log(f0_hz_true+1e-3), torch.log(f0_predict+1e-3), reduction='sum')
-            loss = loss / torch.sum(f0_hz_true>=50)
-        else:
-            loss = F.l1_loss(torch.log(f0_hz_true+1e-3), torch.log(f0_predict+1e-3), reduction='mean')
+        #if self.iteration > 5000:
+        #    f0_predict = torch.where(f0_hz_true<50, f0_predict*0.0, f0_predict)
+        #    loss = F.l1_loss(torch.log(f0_hz_true+1e-3), torch.log(f0_predict+1e-3), reduction='sum')
+        #    loss = loss / torch.sum(f0_hz_true>=50)
+        #else:
+        loss = F.l1_loss(torch.log(f0_hz_true+1e-3), torch.log(f0_predict+1e-3), reduction='mean')
         return torch.sum(loss)
 
 

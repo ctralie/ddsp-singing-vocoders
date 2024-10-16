@@ -140,7 +140,7 @@ class Saver(object):
         print(' [*] model params saved: {}'.format(path_params))
 
         # save
-        torch.save(model, path_pt)
+        #torch.save(model, path_pt)
         torch.save(model.state_dict(), path_params)
 
         # to json
